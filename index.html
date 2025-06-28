@@ -82,7 +82,7 @@
   <div class="pagination" id="pagination"></div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzX6wrvUlYBtL--AiIXgZ_9gMbSMKrMRYYvUZVCOfSrSgHj4sMjqAv4mu9U_ylOuis83A/exec'; // ← replace with your actual URL
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzX6wrvUlYBtL--AiIXgZ_9gMbSMKrMRYYvUZVCOfSrSgHj4sMjqAv4mu9U_ylOuis83A/exec';
 
     async function loadVerses(page = 1) {
       const category = document.getElementById('category').value;
@@ -103,6 +103,7 @@
       container.innerHTML = '';
 
       data.items.forEach(item => {
+        const safeVerse = item.verse.replace(/"/g, '&quot;').replace(/'/g, "\\'");
         const div = document.createElement('div');
         div.className = 'verse-box';
         div.innerHTML = `
@@ -111,7 +112,7 @@
             <span>${item.category}</span>
             <span>${item.date}</span>
           </div>
-          <button class="copy-btn" onclick="copyToClipboard('${item.verse.replace(/'/g, "\\'")}')">Copy</button>
+          <button class="copy-btn" onclick="copyToClipboard('${safeVerse}', event)">Copy</button>
         `;
         container.appendChild(div);
       });
@@ -134,13 +135,15 @@
       }
     }
 
-    function copyToClipboard(text) {
+    function copyToClipboard(text, event) {
+      event.preventDefault();
       navigator.clipboard.writeText(text).then(() => {
         alert('Copied to clipboard!');
+      }).catch(() => {
+        alert('Failed to copy text.');
       });
     }
 
-    // Initial load
     loadVerses(1);
   </script>
 
