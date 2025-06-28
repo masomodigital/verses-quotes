@@ -16,6 +16,12 @@
       text-align: center;
       color: #2e7d32;
     }
+    #counts {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+      color: #333;
+    }
     .verse-box {
       background: white;
       padding: 1rem;
@@ -66,7 +72,10 @@
 </head>
 <body>
 
-  <h1>Daily Inspiration</h1>
+  <h1>Share Daily Inspiration</h1>
+  <img src="https://i.imgur.com/acYoAiQ.jpeg" alt="Daily Inspiration" style="display: inline; max-width: 100%; height: auto; vertical-align: middle; margin-left: 10px;">
+
+  <div id="counts">Loading counts...</div>
 
   <div class="controls">
     <label for="category">Filter by Category:</label>
@@ -83,6 +92,32 @@
 
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbzX6wrvUlYBtL--AiIXgZ_9gMbSMKrMRYYvUZVCOfSrSgHj4sMjqAv4mu9U_ylOuis83A/exec';
+
+    async function loadCounts() {
+      try {
+        // Fetch count of Bible Verses
+        const bibleRes = await fetch(`${API_URL}?category=Bible Verse&page=1`);
+        const bibleData = await bibleRes.json();
+
+        // Fetch count of Motivational Quotes
+        const motRes = await fetch(`${API_URL}?category=Motivational Quote&page=1`);
+        const motData = await motRes.json();
+
+        if (!bibleData.success || !motData.success) {
+          document.getElementById('counts').textContent = 'Failed to load counts.';
+          return;
+        }
+
+        const bibleCount = bibleData.totalItems ?? bibleData.items.length ?? 0;
+        const motCount = motData.totalItems ?? motData.items.length ?? 0;
+
+        document.getElementById('counts').textContent =
+          `Bible Verses: ${bibleCount} | Motivational Quotes: ${motCount}`;
+      } catch (e) {
+        document.getElementById('counts').textContent = 'Error loading counts.';
+        console.error(e);
+      }
+    }
 
     async function loadVerses(page = 1) {
       const category = document.getElementById('category').value;
@@ -144,6 +179,8 @@
       });
     }
 
+    // Load counts and verses on page load
+    loadCounts();
     loadVerses(1);
   </script>
 
