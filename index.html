@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Inspiration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1rem;
+      background: #f2f2f2;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      color: #2e7d32;
+    }
+    .verse-box {
+      background: white;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .verse-text {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .verse-meta {
+      font-size: 0.8rem;
+      color: #666;
+      display: flex;
+      justify-content: space-between;
+    }
+    button.copy-btn {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    select {
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    .pagination {
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .pagination button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Daily Inspiration</h1>
+
+  <div class="controls">
+    <label for="category">Filter by Category:</label>
+    <select id="category" onchange="loadVerses(1)">
+      <option value="">All</option>
+      <option value="Bible Verse">Bible Verse</option>
+      <option value="Motivational Quote">Motivational Quote</option>
+    </select>
+  </div>
+
+  <div id="verse-list"></div>
+
+  <div class="pagination" id="pagination"></div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzX6wrvUlYBtL--AiIXgZ_9gMbSMKrMRYYvUZVCOfSrSgHj4sMjqAv4mu9U_ylOuis83A/exec'; // ← replace with your actual URL
+
+    async function loadVerses(page = 1) {
+      const category = document.getElementById('category').value;
+      let url = `${API_URL}?page=${page}`;
+      if (category) {
+        url += `&category=${encodeURIComponent(category)}`;
+      }
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!data.success) {
+        document.getElementById('verse-list').innerHTML = '<p>Error loading data.</p>';
+        return;
+      }
+
+      const container = document.getElementById('verse-list');
+      container.innerHTML = '';
+
+      data.items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'verse-box';
+        div.innerHTML = `
+          <div class="verse-text">${item.verse}</div>
+          <div class="verse-meta">
+            <span>${item.category}</span>
+            <span>${item.date}</span>
+          </div>
+          <button class="copy-btn" onclick="copyToClipboard('${item.verse.replace(/'/g, "\\'")}')">Copy</button>
+        `;
+        container.appendChild(div);
+      });
+
+      renderPagination(data.page, data.totalPages);
+    }
+
+    function renderPagination(current, total) {
+      const container = document.getElementById('pagination');
+      container.innerHTML = '';
+
+      if (total <= 1) return;
+
+      for (let i = 1; i <= total; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.disabled = i === current;
+        btn.onclick = () => loadVerses(i);
+        container.appendChild(btn);
+      }
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copied to clipboard!');
+      });
+    }
+
+    // Initial load
+    loadVerses(1);
+  </script>
+
+</body>
+</html>
